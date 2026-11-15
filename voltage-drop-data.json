@@ -1,0 +1,31 @@
+{
+  "formula": {
+    "single_phase": "VD (V) = 2 x K x I x L / A (cmil)",
+    "three_phase": "VD (V) = 1.732 x K x I x L / A (cmil)"
+  },
+  "K_ohm_cmil_per_ft": {
+    "copper_75C": 12.9,
+    "aluminum_75C": 21.2
+  },
+  "conductor_area_cmil": {
+    "14 AWG": 4110,
+    "12 AWG": 6530,
+    "10 AWG": 10380,
+    "8 AWG": 16510,
+    "6 AWG": 26240,
+    "4 AWG": 41740,
+    "3 AWG": 52620,
+    "2 AWG": 66360,
+    "1 AWG": 83690,
+    "1/0 AWG": 105600,
+    "2/0 AWG": 133100,
+    "3/0 AWG": 167800,
+    "4/0 AWG": 211600,
+    "250 kcmil": 250000,
+    "300 kcmil": 300000,
+    "350 kcmil": 350000,
+    "400 kcmil": 400000,
+    "500 kcmil": 500000
+  },
+  "guideline": "The Canadian Electrical Code recommends keeping voltage drop to about 3% on a branch circuit and 5% total from the supply point to the point of use (Rule 8-102 guidance)."
+}
