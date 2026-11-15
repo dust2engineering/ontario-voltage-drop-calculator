@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voltage Drop Calculator (Ontario / CEC) | Dust 2 Engineering Inc.</title>
+<style>
+:root{color-scheme:dark}
+body{background:#0e1116;color:#e6e9ee;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:24px;line-height:1.55}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-size:1.55rem;line-height:1.25;margin:.2em 0 .1em}
+h2{font-size:1.15rem;margin-top:1.6em;color:#ffd479}
+.sub{color:#9fb0c3;margin:.2em 0 1.2em}
+.card{background:#161b22;border:1px solid #2b333f;border-radius:12px;padding:18px;margin:14px 0}
+label{display:block;margin:.7em 0 .25em;color:#c8d3e0;font-size:.95rem}
+input,select{width:100%;box-sizing:border-box;background:#0e1116;color:#e6e9ee;border:1px solid #39424f;border-radius:8px;padding:9px;font-size:1rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.row{grid-template-columns:1fr}}
+button{background:#f0a832;color:#14100a;border:0;border-radius:8px;padding:11px 18px;font-size:1rem;font-weight:600;cursor:pointer;margin-top:14px}
+button.ghost{background:#232a35;color:#e6e9ee}
+pre{background:#0a0d11;border:1px solid #2b333f;border-radius:10px;padding:14px;white-space:pre-wrap;word-break:break-word;font-size:.92rem}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid #2b333f;padding:6px 8px;text-align:left}
+th{background:#1b212b}
+.small{color:#9fb0c3;font-size:.88rem}
+a{color:#7cc4ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Voltage Drop Calculator (Ontario / CEC)</h1>
+<p class="sub">Voltage drop by conductor size, length and load — checked against the CEC 3% / 5% guidelines.</p>
+<div class="card">
+<div class="row"><div><label>Load current (A)</label><input id="amps" type="number" value="60" min="0"></div>
+<div><label>One-way run length (m)</label><input id="len" type="number" value="45" min="0"></div></div>
+<div class="row"><div><label>Conductor size</label><select id="size"><option value="14 AWG">14 AWG</option><option value="12 AWG">12 AWG</option><option value="10 AWG">10 AWG</option><option value="8 AWG">8 AWG</option><option value="6 AWG">6 AWG</option><option value="4 AWG">4 AWG</option><option value="3 AWG">3 AWG</option><option value="2 AWG">2 AWG</option><option value="1 AWG">1 AWG</option><option value="1/0 AWG">1/0 AWG</option><option value="2/0 AWG">2/0 AWG</option><option value="3/0 AWG">3/0 AWG</option><option value="4/0 AWG">4/0 AWG</option><option value="250 kcmil">250 kcmil</option><option value="300 kcmil">300 kcmil</option><option value="350 kcmil">350 kcmil</option><option value="400 kcmil">400 kcmil</option><option value="500 kcmil">500 kcmil</option></select></div>
+<div><label>Material</label><select id="mat"><option value="cu">Copper (K = 12.9)</option><option value="al">Aluminum (K = 21.2)</option></select></div></div>
+<div class="row"><div><label>System voltage (V)</label><input id="volt" type="number" value="208" min="1"></div>
+<div><label>Phase</label><select id="ph"><option value="3">Three-phase</option><option value="1">Single-phase</option></select></div></div>
+<button onclick="go()">Calculate voltage drop</button>
+</div>
+<h2>Result</h2>
+<pre id="out">Your voltage drop will appear here.</pre>
+<p class="small">Long runs to rooftop units and parking-lot loads fail quietly: the equipment gets less
+voltage than its nameplate wants. The Canadian Electrical Code guideline (Rule 8-102) is about 3% on a
+branch circuit and 5% in total. VD = 2 x K x I x L / A for single-phase, 1.732 in place of 2 for
+three-phase, with K = 12.9 for copper and 21.2 for aluminum at 75&deg;C.</p>
+<p class="small">Free tool by <b>Dust 2 Engineering Inc.</b>, Mississauga, Ontario — building permit
+drawings for restaurants and small commercial projects across the GTA, stamped by an Ontario P.Eng.
+Flat rate $3,500–$5,000. Questions or a project to discuss: open an issue in this repository.</p>
+</div>
+<script>
+
+const AREAS = {"14 AWG": 4110, "12 AWG": 6530, "10 AWG": 10380, "8 AWG": 16510, "6 AWG": 26240, "4 AWG": 41740, "3 AWG": 52620, "2 AWG": 66360, "1 AWG": 83690, "1/0 AWG": 105600, "2/0 AWG": 133100, "3/0 AWG": 167800, "4/0 AWG": 211600, "250 kcmil": 250000, "300 kcmil": 300000, "350 kcmil": 350000, "400 kcmil": 400000, "500 kcmil": 500000};
+function go(){
+  const amps = parseFloat(document.getElementById('amps').value) || 0;
+  const lenM = parseFloat(document.getElementById('len').value) || 0;
+  const size = document.getElementById('size').value;
+  const volt = parseFloat(document.getElementById('volt').value) || 208;
+  const ph = document.getElementById('ph').value;
+  const mat = document.getElementById('mat').value;
+  const K = mat === 'cu' ? 12.9 : 21.2;
+  const Lft = lenM * 3.28084;
+  const vd = (ph === '1' ? 2 : 1.732) * K * amps * Lft / AREAS[size];
+  const pct = vd / volt * 100;
+  let verdict = pct <= 3 ? 'within the 3% branch-circuit guideline' : (pct <= 5 ? 'above the 3% branch guideline - consider upsizing' : 'above the 5% total guideline - upsize the conductor');
+  document.getElementById('out').textContent = size + ' ' + (mat === 'cu' ? 'copper' : 'aluminum') + ', ' + amps + ' A, one-way ' + lenM + ' m (' + Lft.toFixed(0) + ' ft), ' + volt + ' V ' + (ph === '1' ? 'single' : 'three') + '-phase\nVoltage drop: ' + vd.toFixed(2) + ' V = ' + pct.toFixed(2) + '% -> ' + verdict;
+}
+
+</script>
+</body>
+</html>
